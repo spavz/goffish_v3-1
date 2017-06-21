@@ -119,7 +119,8 @@ Inner:  for (IEdge<LongWritable, LongWritable, LongWritable> e : v.getOutEdges()
       // create a probe message(messageType;subgraphid;distance to next node)
       // P = Probe Message
       // R = Reply Message
-      String msg = "P;" + getSubgraph().getSubgraphId().get() + ";" + 2;
+      String msg = "P;" + getSubgraph().getSubgraphId()
+              .get() + ";" + 2;
       _probed.add(getSubgraph().getSubgraphId().get());
       // distance to itself is 1
       _distanceMap.put(getSubgraph().getSubgraphId().get(), new Long(1));

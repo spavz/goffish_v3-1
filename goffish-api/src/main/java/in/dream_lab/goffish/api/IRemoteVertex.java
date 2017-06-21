@@ -30,6 +30,5 @@ public interface IRemoteVertex<V extends Writable, E extends Writable, I extends
   K getSubgraphId();
   
   void setLocalState(V value);
-  
-  V getLocalState();
+
 }
