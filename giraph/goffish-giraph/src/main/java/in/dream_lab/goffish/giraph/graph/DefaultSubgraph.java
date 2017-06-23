@@ -35,7 +35,7 @@ public class DefaultSubgraph<SV extends Writable, V extends Writable, E extends 
   }
 
   @Override
-  public IEdge<E, I, EI> getEdgeById(EI edgeId) {
+  public IEdge<E, EI, I, Writable> getEdgeById(EI edgeId) {
     throw new UnsupportedOperationException();
   }
 
@@ -47,6 +47,16 @@ public class DefaultSubgraph<SV extends Writable, V extends Writable, E extends 
   @Override
   public SV getSubgraphValue() {
     return getSubgraphVertices().getSubgraphValue();
+  }
+
+  @Override
+  public Iterable<S> getRemoteSubgraphsID() {
+    return null;
+  }
+
+  @Override
+  public Iterable<IEdge> getRemoteInEdges() {
+    return null;
   }
 
 
@@ -88,18 +98,18 @@ public class DefaultSubgraph<SV extends Writable, V extends Writable, E extends 
     return getId().getPartitionId();
   }
 
-  public Iterable<IEdge<E, I, EI>> getOutEdges() {
-    return new Iterable<IEdge<E, I, EI>>() {
+  public Iterable<IEdge<E, EI, I, Writable>> getOutEdges() {
+    return new Iterable<IEdge<E, EI, I, Writable>>() {
       @Override
-      public Iterator<IEdge<E, I, EI>> iterator() {
+      public Iterator<IEdge<E, EI, I, Writable>> iterator() {
         return new EdgeIterator();
       }
     };
   }
 
-  private final class EdgeIterator implements Iterator<IEdge<E, I, EI>> {
+  private final class EdgeIterator implements Iterator<IEdge<E, EI, I, Writable>> {
     Iterator<IVertex<V, E, I, EI>> vertexMapIterator;
-    Iterator<IEdge<E, I, EI>> edgeIterator;
+    Iterator<IEdge<E, EI, I, Writable>> edgeIterator;
 
     public EdgeIterator() {
       vertexMapIterator = getVertices().iterator();
@@ -123,7 +133,7 @@ public class DefaultSubgraph<SV extends Writable, V extends Writable, E extends 
       return false;
     }
 
-    public IEdge<E, I, EI> next() {
+    public IEdge<E, EI, I, Writable> next() {
       if (edgeIterator.hasNext()) {
         return edgeIterator.next();
       } else {

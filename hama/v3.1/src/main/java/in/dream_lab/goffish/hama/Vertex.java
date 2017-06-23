@@ -20,8 +20,6 @@
 package in.dream_lab.goffish.hama;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.io.Writable;
@@ -32,12 +30,14 @@ import in.dream_lab.goffish.api.IVertex;
 public class Vertex<V extends Writable, E extends Writable, I extends Writable, J extends Writable>
     implements IVertex<V, E, I, J> {
 
-  private List<IEdge<E, I, J>> _adjList;
+  private List<IEdge<E, J, I, Writable>> _adjList;
+  private List<IEdge<E, J, I, Writable>> _inadjList;
   private I vertexID;
   private V _value;
 
   Vertex() {
-    _adjList = new ArrayList<IEdge<E, I, J>>();
+      _adjList = new ArrayList<IEdge<E, J, I, Writable>>();
+      _inadjList = new ArrayList<IEdge<E, J, I, Writable>>();
   }
 
   Vertex(I ID) {
@@ -45,11 +45,16 @@ public class Vertex<V extends Writable, E extends Writable, I extends Writable, 
     vertexID = ID;
   }
 
-  Vertex(I Id, Iterable<IEdge<E, I, J>> edges) {
+  Vertex(I Id, Iterable<IEdge<E, J, I, Writable>> edges) {
     this(Id);
-    for (IEdge<E, I, J> e : edges)
+    for (IEdge<E, J, I, Writable> e : edges)
       _adjList.add(e);
   }
+
+
+    public Iterable<IEdge<E, J, I, Writable>> getInEdges() {
+        return _inadjList;
+    }
 
   void setVertexID(I vertexID) {
     this.vertexID = vertexID;
@@ -66,7 +71,7 @@ public class Vertex<V extends Writable, E extends Writable, I extends Writable, 
   }
 
   @Override
-  public Iterable<IEdge<E, I, J>> getOutEdges() {
+  public Iterable<IEdge<E, J, I, Writable>> getOutEdges() {
     return _adjList;
   }
 
@@ -81,14 +86,19 @@ public class Vertex<V extends Writable, E extends Writable, I extends Writable, 
   }
 
   @Override
-  public IEdge<E, I, J> getOutEdge(I vertexID) {
-    for (IEdge<E, I, J> e : _adjList)
+  public IEdge<E, J, I, Writable> getOutEdge(I vertexID) {
+    for (IEdge<E, J, I, Writable> e : _adjList)
       if (e.getSinkVertexId().equals(vertexID))
         return e;
     return null;
   }
 
-  @SuppressWarnings("rawtypes")
+    @Override
+    public void addInEdge(IEdge<E, J, I, Writable> e) {
+            _inadjList.add(e);
+    }
+
+    @SuppressWarnings("rawtypes")
   @Override
   public boolean equals(Object o) {
     return (this.vertexID).equals(((IVertex) o).getVertexId());

@@ -23,9 +23,9 @@ import org.apache.hadoop.io.Writable;
 
 import in.dream_lab.goffish.api.IEdge;
 
-public class Edge<E extends Writable, I extends Writable, J extends Writable>
-    implements IEdge<E, I, J> {
-
+public class Edge<E extends Writable, J extends Writable, I extends Writable, K extends  Writable>
+    implements IEdge<E, J, I, Writable> {
+  private K _source;
   private E _value;
   private J edgeID;
   private I _sink;
@@ -35,11 +35,20 @@ public class Edge<E extends Writable, I extends Writable, J extends Writable>
     _sink = sinkID;
   }
 
+  Edge(K sourceID,J id, I sinkID) {
+    edgeID = id;
+    _sink = sinkID;
+    _source = sourceID;
+  }
+
   void setSinkID(I sinkID) {
     _sink = sinkID;
   }
 
-  @Override
+  void setSourceID(K sourceID) {
+    _source = sourceID;
+  }
+
   public E getValue() {
     return _value;
   }
@@ -58,4 +67,13 @@ public class Edge<E extends Writable, I extends Writable, J extends Writable>
   public I getSinkVertexId() {
     return _sink;
   }
+
+
+
+  @Override
+  public K getSourceVertexId() {
+    return _source;
+  }
+
+  //A slight trick to make the vertex
 }

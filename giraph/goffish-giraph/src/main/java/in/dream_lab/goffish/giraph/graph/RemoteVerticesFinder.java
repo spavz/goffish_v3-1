@@ -47,7 +47,7 @@ public class RemoteVerticesFinder extends GiraphSubgraphComputation<LongWritable
 
     for (IVertex<DoubleWritable, DoubleWritable, LongWritable, LongWritable> sv : vertices.values()) {
       // LOG.info("Test, Number of vertex edges: " + sv.getOutEdges().size());
-      for (IEdge<DoubleWritable, LongWritable, LongWritable> se : sv.getOutEdges()) {
+      for (IEdge<DoubleWritable, LongWritable, LongWritable, Writable> se : sv.getOutEdges()) {
         //System.out.println("Subgraph ID  : " + subgraph.getVertexId().getSubgraphId() +"\t its vertex : " + sv.getVertexId() + " has edge pointing to " + se.getSinkVertexId()+"\n");
         edgeCount++;
         if (!vertices.containsKey(se.getSinkVertexId())) {

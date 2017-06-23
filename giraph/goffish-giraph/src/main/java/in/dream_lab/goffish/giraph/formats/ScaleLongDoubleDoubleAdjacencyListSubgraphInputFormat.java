@@ -10,10 +10,7 @@ import org.apache.giraph.edge.Edge;
 import org.apache.giraph.edge.EdgeFactory;
 import org.apache.giraph.io.formats.AdjacencyListTextVertexInputFormat;
 import org.apache.giraph.io.formats.TextDoubleDoubleAdjacencyListVertexInputFormat;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
@@ -39,7 +36,7 @@ public class ScaleLongDoubleDoubleAdjacencyListSubgraphInputFormat extends Scale
             AdjacencyListTextSubgraphReader {
 
         @Override
-        public IEdge<DoubleWritable, LongWritable, NullWritable> decodeVertexEdge(String source, String id) {
+        public IEdge<DoubleWritable, NullWritable, LongWritable, Writable> decodeVertexEdge(String source, String id) {
             double vertexIdDouble = Double.parseDouble(source);
             double destinationIdDouble = Double.parseDouble(id);
             LongWritable vertexId = new LongWritable(Long.parseLong(id));

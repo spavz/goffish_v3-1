@@ -122,7 +122,7 @@ public class GiraphSubgraphComputation<S extends WritableComparable,
     subgraph.voteToHalt();
   }
 
-  IEdge<E, I, EI> getEdgeById(EI id) {
+  IEdge<E, EI, I, Writable> getEdgeById(EI id) {
     throw new UnsupportedOperationException();
   }
 

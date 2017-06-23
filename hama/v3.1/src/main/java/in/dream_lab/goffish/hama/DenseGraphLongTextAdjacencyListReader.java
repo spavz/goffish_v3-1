@@ -23,29 +23,22 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hama.bsp.BSPPeer;
-import org.apache.hama.bsp.Partitioner;
 import org.apache.hama.bsp.sync.SyncException;
 import org.apache.hama.commons.util.KeyValuePair;
 import org.apache.hama.util.ReflectionUtils;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
@@ -56,7 +49,6 @@ import in.dream_lab.goffish.api.IVertex;
 import in.dream_lab.goffish.hama.api.IControlMessage;
 import in.dream_lab.goffish.hama.api.IReader;
 import in.dream_lab.goffish.hama.utils.DisjointSets;
-import in.dream_lab.goffish.api.IMessage;
 import in.dream_lab.goffish.api.IRemoteVertex;
 
 
@@ -135,13 +127,13 @@ public class DenseGraphLongTextAdjacencyListReader<S extends Writable, V extends
       String vertexValue[] = stringInput.split("\\s+");
       
       LongWritable vertexID = new LongWritable(Long.parseLong(vertexValue[0]));
-      List<IEdge<E, LongWritable, LongWritable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable>>();
+      List<IEdge<E, LongWritable, LongWritable, Writable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable, Writable>>();
 
       for (int j = 1; j < vertexValue.length; j++) {
         LongWritable sinkID = new LongWritable(Long.parseLong(vertexValue[j]));
         LongWritable edgeID = new LongWritable(
                 edgeCount++ | (((long) peer.getPeerIndex()) << 32));
-        Edge<E, LongWritable, LongWritable> e = new Edge<E, LongWritable, LongWritable>(edgeID, sinkID);
+        Edge<E, LongWritable, LongWritable, Writable> e = new Edge<E, LongWritable, LongWritable, Writable>(edgeID, sinkID);
         _adjList.add(e);
       }
       vertexMap.put(vertexID.get(), createVertexInstance(vertexID, _adjList));
@@ -157,7 +149,7 @@ public class DenseGraphLongTextAdjacencyListReader<S extends Writable, V extends
 
     /* Create remote vertex objects. */
     for (IVertex<V, E, LongWritable, LongWritable> vertex : vertexMap.values()) {
-      for (IEdge<E, LongWritable, LongWritable> e : vertex.getOutEdges()) {
+      for (IEdge<E, LongWritable, LongWritable, Writable> e : vertex.getOutEdges()) {
         LongWritable sinkID = e.getSinkVertexId();
         if (!vertexMap.containsKey(sinkID.get())) {
           IRemoteVertex<V, E, LongWritable, LongWritable, LongWritable> sink = new RemoteVertex<>(
@@ -256,7 +248,7 @@ public class DenseGraphLongTextAdjacencyListReader<S extends Writable, V extends
     return partition.getSubgraphs();
   }
 
-  private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(LongWritable vertexID, List<IEdge<E, LongWritable, LongWritable>> adjList) {
+  private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(LongWritable vertexID, List<IEdge<E, LongWritable, LongWritable, Writable>> adjList) {
     return ReflectionUtils.newInstance(GraphJobRunner.VERTEX_CLASS, new Class<?>[] {Writable.class, Iterable.class},
             new Object[] {vertexID, adjList});
   }
@@ -297,7 +289,7 @@ public class DenseGraphLongTextAdjacencyListReader<S extends Writable, V extends
 
     // union edge pairs
     for (IVertex<V, E, LongWritable, LongWritable> vertex : vertexMap.values()) {
-      for (IEdge<E, LongWritable, LongWritable> edge : vertex.getOutEdges()) {
+      for (IEdge<E, LongWritable, LongWritable, Writable> edge : vertex.getOutEdges()) {
         IVertex<V, E, LongWritable, LongWritable> sink = vertexMap
             .get(edge.getSinkVertexId().get());
         if (sink == null) {

@@ -37,13 +37,13 @@ import in.dream_lab.goffish.api.IVertex;
 public class RicherSubgraph<S extends Writable, V extends Writable, E extends Writable, I extends Writable, J extends Writable, K extends Writable> extends Subgraph<S, V, E, I, J, K> {
   
   //question: use java.util map or hadoop map(is writable)?
-  private Map<J, IEdge<E, I, J>> _edges;
+  private Map<J, IEdge<E, J, I, Writable>> _edges;
   private List<IVertex<V, E, I, J>> _localVertices;
   private List<IRemoteVertex<V, E, I, J, K>> _remoteVertices;
 
   RicherSubgraph(int partitionID, K subgraphID) {
     super(partitionID, subgraphID);
-    _edges = new HashMap<J, IEdge<E, I, J>>();
+    _edges = new HashMap<J, IEdge<E, J, I, Writable>>();
     _localVertices = new ArrayList<IVertex<V, E, I ,J>>();
     _remoteVertices = new ArrayList<IRemoteVertex<V, E, I, J, K>>();
   }
@@ -56,7 +56,7 @@ public class RicherSubgraph<S extends Writable, V extends Writable, E extends Wr
     }
     else {
       _localVertices.add(v);
-      for (IEdge<E, I, J> edge : v.getOutEdges()) {
+      for (IEdge<E, J, I, Writable> edge : v.getOutEdges()) {
         _edges.put(edge.getEdgeId(), edge);
       }
     }
@@ -78,14 +78,14 @@ public class RicherSubgraph<S extends Writable, V extends Writable, E extends Wr
   }
   
   @Override
-  public IEdge<E, I, J> getEdgeById(J edgeID) {
+  public IEdge<E, J, I, Writable> getEdgeById(J edgeID) {
     return _edges.get(edgeID);
   }
   
   /*
    * Returns an iterable over all the edges of the subgraph
    */
-  public Iterable<IEdge<E, I, J>> getOutEdges() {
+  public Iterable<IEdge<E, J, I, Writable>> getOutEdges() {
     return _edges.values();
   }
 

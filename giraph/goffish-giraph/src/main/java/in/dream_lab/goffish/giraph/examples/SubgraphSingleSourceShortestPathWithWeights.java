@@ -18,10 +18,7 @@ package in.dream_lab.goffish.giraph.examples;
 import in.dream_lab.goffish.api.*;
 import org.apache.giraph.utils.ExtendedByteArrayDataInput;
 import org.apache.giraph.utils.ExtendedByteArrayDataOutput;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.*;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -388,7 +385,7 @@ public class SubgraphSingleSourceShortestPathWithWeights extends AbstractSubgrap
       // BFS traverse to children of current vertex
       // update their shortest distance if necessary
       // add them to update set if distance has changed
-      for (IEdge<DoubleWritable, LongWritable, NullWritable> e : currentVertex.getOutEdges()) {
+      for (IEdge<DoubleWritable, NullWritable, LongWritable, Writable> e : currentVertex.getOutEdges()) {
 //        LOG.info("Source,Destination,Decoded edge:" + currentVertex.getVertexId() + "," + e.getSinkVertexId()+ "," + e.getValue());
         short newChildDistance = (short) (currentDistanceVertex.distance + (short) e.getValue().get());
         // get child vertex

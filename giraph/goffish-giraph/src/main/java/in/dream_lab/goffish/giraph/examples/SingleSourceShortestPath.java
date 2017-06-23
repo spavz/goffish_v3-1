@@ -21,6 +21,7 @@ import org.apache.giraph.utils.ExtendedByteArrayDataOutput;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
@@ -387,7 +388,7 @@ public class SingleSourceShortestPath extends AbstractSubgraphComputation<Shorte
       // BFS traverse to children of current vertex
       // update their shortest distance if necessary
       // add them to update set if distance has changed
-      for (IEdge<NullWritable, LongWritable, NullWritable> e : currentVertex.getOutEdges()) {
+      for (IEdge<NullWritable, NullWritable, LongWritable, Writable> e : currentVertex.getOutEdges()) {
 
         // get child vertex
         IVertex<LongWritable, NullWritable, LongWritable, NullWritable> childVertex = subgraph.getVertexById(e.getSinkVertexId());

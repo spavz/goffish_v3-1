@@ -18,6 +18,7 @@ import org.apache.giraph.utils.ExtendedByteArrayDataOutput;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.Writable;
 
 /*
  * Ported from goffish v2
@@ -64,7 +65,7 @@ public class SubgraphTriangleCount extends
       subgraph.setSubgraphValue(triangleCountSubgraphValue);
       for (IVertex<LongWritable, NullWritable, LongWritable, LongWritable> vertex : subgraph.getLocalVertices()) {
         Set<Long> adjVertices = new HashSet<Long>();
-        for (IEdge<NullWritable, LongWritable, LongWritable> edge : vertex.getOutEdges()) {
+        for (IEdge<NullWritable, LongWritable, LongWritable, Writable> edge : vertex.getOutEdges()) {
           adjVertices.add(edge.getSinkVertexId().get());
         }
         triangleCountSubgraphValue.adjSet.put(vertex.getVertexId().get(), adjVertices);
@@ -76,7 +77,7 @@ public class SubgraphTriangleCount extends
       long triangleCount = triangleCountSubgraphValue.triangleCount;
       Map<LongWritable, ExtendedByteArrayDataOutput> msg = new HashMap<>();
       for (IVertex<LongWritable, NullWritable, LongWritable, LongWritable> vertex : subgraph.getLocalVertices()) {
-        for (IEdge<NullWritable, LongWritable, LongWritable> edge : vertex.getOutEdges()) {
+        for (IEdge<NullWritable, LongWritable, LongWritable, Writable> edge : vertex.getOutEdges()) {
           IVertex<LongWritable, NullWritable, LongWritable, LongWritable> adjVertex =
               subgraph.getVertexById(edge.getSinkVertexId());
 
@@ -101,7 +102,7 @@ public class SubgraphTriangleCount extends
           }
           // Counting triangles which have at least two vertices in the same
           // subgraph.
-          for (IEdge<NullWritable, LongWritable, LongWritable> edgeAdjVertex : adjVertex.getOutEdges()) {
+          for (IEdge<NullWritable, LongWritable, LongWritable, Writable> edgeAdjVertex : adjVertex.getOutEdges()) {
             IVertex<LongWritable, NullWritable, LongWritable, LongWritable> adjAdjVertex = subgraph.getVertexById(edgeAdjVertex.getSinkVertexId());
             if (adjAdjVertex.isRemote()
                 || adjAdjVertex.getVertexId().get() > adjVertex.getVertexId().get()) {
@@ -124,7 +125,7 @@ public class SubgraphTriangleCount extends
       for (Map.Entry<Long, List<Pair<Long, Long>>> entry : ids.entrySet()) {
         IVertex<LongWritable, NullWritable, LongWritable, LongWritable> vertex = subgraph.getVertexById(new LongWritable(entry.getKey()));
         List<Pair<Long, Long>> idPairs = entry.getValue();
-        for (IEdge<NullWritable, LongWritable, LongWritable> edge : vertex.getOutEdges()) {
+        for (IEdge<NullWritable, LongWritable, LongWritable, Writable> edge : vertex.getOutEdges()) {
           IVertex<LongWritable, NullWritable, LongWritable, LongWritable> adjVertex = subgraph.getVertexById(edge.getSinkVertexId());
           if (adjVertex.isRemote() && adjVertex.getVertexId().get() > vertex.getVertexId().get()) {
             LongWritable remoteSubgraphId = ((IRemoteVertex<LongWritable, NullWritable, LongWritable, LongWritable, LongWritable>) adjVertex)
@@ -156,7 +157,7 @@ public class SubgraphTriangleCount extends
       for (Map.Entry<Long, List<Pair<Long, Long>>> entry : ids.entrySet()) {
         IVertex<LongWritable, NullWritable, LongWritable, LongWritable> vertex = subgraph.getVertexById(new LongWritable(entry.getKey()));
         for (Pair<Long, Long> p : entry.getValue()) {
-          for (IEdge<NullWritable, LongWritable, LongWritable> edge : vertex.getOutEdges()) {
+          for (IEdge<NullWritable, LongWritable, LongWritable, Writable> edge : vertex.getOutEdges()) {
             if (edge.getSinkVertexId().get() == p.first) {
               triangleCount++;
             }

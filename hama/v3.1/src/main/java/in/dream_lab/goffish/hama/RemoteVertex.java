@@ -19,7 +19,9 @@
 
 package in.dream_lab.goffish.hama;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.io.Writable;
@@ -34,14 +36,19 @@ public class RemoteVertex<V extends Writable, E extends Writable, I extends Writ
   I vertexID;
   K subgraphID;
   V _value;
+  private List<IEdge<E, J, I, Writable>> _inadjList;
 
   public RemoteVertex(I vertexID, K subgraphID) {
     this.vertexID = vertexID;
     this.subgraphID = subgraphID;
+    _inadjList = new ArrayList<IEdge<E, J, I, Writable>>();
+
   }
 
   public RemoteVertex(I vertexID) {
     this.vertexID = vertexID;
+    _inadjList = new ArrayList<IEdge<E, J, I, Writable>>();
+
   }
 
   public void setSubgraphID(K subgraphID) {
@@ -54,8 +61,13 @@ public class RemoteVertex<V extends Writable, E extends Writable, I extends Writ
   }
 
   @Override
-  public Collection<IEdge<E, I, J>> getOutEdges() {
+  public Collection<IEdge<E, J, I, Writable>> getOutEdges() {
     return null;
+  }
+
+  @Override
+  public Iterable<IEdge<E, J, I, Writable>> getInEdges() {
+    return _inadjList;
   }
 
   @Override
@@ -74,8 +86,13 @@ public class RemoteVertex<V extends Writable, E extends Writable, I extends Writ
   }
 
   @Override
-  public IEdge<E, I, J> getOutEdge(I i) {
+  public IEdge<E, J, I, Writable> getOutEdge(I i) {
     throw new NotImplementedException("Remote Vertex does not have edges");
+  }
+
+  @Override
+  public void addInEdge(IEdge<E, J, I, Writable> e) {
+    _inadjList.add(e);
   }
 
   @Override
@@ -86,11 +103,6 @@ public class RemoteVertex<V extends Writable, E extends Writable, I extends Writ
   @Override
   public void setLocalState(V value) {
     this._value = value;
-  }
-
-  @Override
-  public V getLocalState() {
-    return _value;
   }
 
   @SuppressWarnings("rawtypes")

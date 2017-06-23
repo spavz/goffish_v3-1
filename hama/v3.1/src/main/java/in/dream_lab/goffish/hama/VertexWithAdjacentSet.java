@@ -21,6 +21,7 @@ package in.dream_lab.goffish.hama;
 
 import in.dream_lab.goffish.api.IEdge;
 import in.dream_lab.goffish.api.IVertex;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.hadoop.io.Writable;
 
 import java.util.*;
@@ -28,12 +29,12 @@ import java.util.*;
 public class VertexWithAdjacentSet<V extends Writable, E extends Writable, I extends Writable, J extends Writable>
     implements IVertex<V, E, I, J> {
 
-  private Map<I, IEdge<E, I, J>> _adjSet;
+  private Map<I, IEdge<E, J, I, Writable>> _adjSet;
   private I vertexID;
   private V _value;
 
   VertexWithAdjacentSet() {
-    _adjSet = new HashMap<I, IEdge<E, I, J>>();
+    _adjSet = new HashMap<I, IEdge<E, J, I, Writable>>();
   }
 
   VertexWithAdjacentSet(I ID) {
@@ -41,9 +42,9 @@ public class VertexWithAdjacentSet<V extends Writable, E extends Writable, I ext
     vertexID = ID;
   }
 
-  VertexWithAdjacentSet(I Id, Iterable<IEdge<E, I, J>> edges) {
+  VertexWithAdjacentSet(I Id, Iterable<IEdge<E, J, I, Writable>> edges) {
     this(Id);
-    for (IEdge<E, I, J> e : edges)
+    for (IEdge<E, J, I, Writable> e : edges)
       _adjSet.put(e.getSinkVertexId(), e);
   }
 
@@ -62,13 +63,23 @@ public class VertexWithAdjacentSet<V extends Writable, E extends Writable, I ext
   }
 
   @Override
-  public Iterable<IEdge<E, I, J>> getOutEdges() {
+  public Iterable<IEdge<E, J, I, Writable>> getOutEdges() {
     return _adjSet.values();
   }
 
   @Override
-  public IEdge<E, I, J> getOutEdge(I vertexID) {
+  public Iterable<IEdge<E, J, I, Writable>> getInEdges() {
+    return null;
+  }
+
+  @Override
+  public IEdge<E, J, I, Writable> getOutEdge(I vertexID) {
     return _adjSet.get(vertexID);
+  }
+
+  @Override
+  public void addInEdge(IEdge<E, J, I, Writable> e) {
+    throw new NotImplementedException("Please implement InEdges");
   }
 
   @Override

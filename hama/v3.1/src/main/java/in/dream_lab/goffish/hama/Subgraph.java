@@ -21,7 +21,7 @@ package in.dream_lab.goffish.hama;
 
 import java.util.*;
 
-import com.google.common.collect.Iterables;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 
 import in.dream_lab.goffish.api.IEdge;
@@ -35,6 +35,7 @@ public class Subgraph<S extends Writable, V extends Writable, E extends Writable
   K subgraphID;
   private Map<I, IVertex<V, E, I, J>> _localVertexMap;
   private Map<I, IRemoteVertex<V, E, I, J, K>> _remoteVertexMap;
+  private Set<K> _remoteSubgraphIDSet;
   int partitionID;
   S _value;
 
@@ -43,11 +44,14 @@ public class Subgraph<S extends Writable, V extends Writable, E extends Writable
     this.subgraphID = subgraphID;
     _localVertexMap = new HashMap<I, IVertex<V, E, I, J>>();
     _remoteVertexMap = new HashMap<I, IRemoteVertex<V, E, I, J, K>>();
+    _remoteSubgraphIDSet = new HashSet<K>();
   }
 
   void addVertex(IVertex<V, E, I, J> v) {
-    if (v instanceof IRemoteVertex)
-      _remoteVertexMap.put(v.getVertexId(), (IRemoteVertex<V, E, I, J, K>) v);
+    if (v instanceof IRemoteVertex) {
+        _remoteVertexMap.put(v.getVertexId(), (IRemoteVertex<V, E, I, J, K>) v);
+        _remoteSubgraphIDSet.add((K) ((IRemoteVertex) v).getSubgraphId());
+    }
     else
       _localVertexMap.put(v.getVertexId(), v);
   }
@@ -132,9 +136,9 @@ public class Subgraph<S extends Writable, V extends Writable, E extends Writable
   }
 
   @Override
-  public IEdge<E, I, J> getEdgeById(J edgeID) {
+  public IEdge<E, J, I, Writable> getEdgeById(J edgeID) {
     for (IVertex<V, E, I, J> vertex : _localVertexMap.values()) {
-      for (IEdge<E, I, J> vertexEdge : vertex.getOutEdges()) {
+      for (IEdge<E, J, I, Writable> vertexEdge : vertex.getOutEdges()) {
         if (edgeID.equals(vertexEdge)) {
           return vertexEdge;
         }
@@ -144,13 +148,29 @@ public class Subgraph<S extends Writable, V extends Writable, E extends Writable
   }
 
   @Override
-  public Iterable<IEdge<E, I, J>> getOutEdges() {
-    List<IEdge<E, I, J>> edgeList = new ArrayList<IEdge<E, I, J>>();
+  public Iterable<IEdge<E, J, I, Writable>> getOutEdges() {
+    List<IEdge<E, J, I, Writable>> edgeList = new ArrayList<IEdge<E, J, I, Writable>>();
     for (IVertex<V, E, I, J> vertex : _localVertexMap.values()) {
-      for (IEdge<E, I, J> vertexEdge : vertex.getOutEdges()) {
+      for (IEdge<E, J, I, Writable> vertexEdge : vertex.getOutEdges()) {
         edgeList.add(vertexEdge);
       }
     }
     return edgeList;
   }
+
+    @Override
+    public Iterable<K> getRemoteSubgraphsID() {
+        return _remoteSubgraphIDSet;
+    }
+
+    @Override
+    public Iterable<IEdge> getRemoteInEdges() {
+      List<IEdge> remoteInedges = new ArrayList<>();
+        for(IVertex<V,E,I,J> v: _localVertexMap.values())
+            for(IEdge<E,J,I,Writable> e: v.getInEdges())
+                if(!_localVertexMap.containsKey(e.getSourceVertexId()))
+                    remoteInedges.add(e);
+
+        return remoteInedges;
+    }
 }

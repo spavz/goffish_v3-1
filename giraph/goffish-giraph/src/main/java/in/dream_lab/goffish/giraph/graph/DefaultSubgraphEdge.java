@@ -11,7 +11,7 @@ import java.io.IOException;
 /**
  * Created by anirudh on 18/10/16.
  */
-public class DefaultSubgraphEdge<I extends WritableComparable, E extends Writable, EI extends WritableComparable> implements IEdge<E, I, EI>, Writable {
+public class DefaultSubgraphEdge<I extends WritableComparable, E extends Writable, EI extends WritableComparable> implements IEdge<E, EI, I, Writable>, Writable {
 
     private EI edgeId;
     private I sinkVertexId;
@@ -26,6 +26,11 @@ public class DefaultSubgraphEdge<I extends WritableComparable, E extends Writabl
     @Override
     public I getSinkVertexId() {
         return sinkVertexId;
+    }
+
+    @Override
+    public Writable getSourceVertexId() {
+        return null;
     }
 
     @Override

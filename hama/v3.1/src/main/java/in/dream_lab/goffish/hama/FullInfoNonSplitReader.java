@@ -147,7 +147,7 @@ public class FullInfoNonSplitReader<S extends Writable, V extends Writable, E ex
           partitionID, vertexSubgraphID);
       partition.addSubgraph(subgraph);
     }
-    List<IEdge<E, LongWritable, LongWritable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable>>();
+    List<IEdge<E, LongWritable, LongWritable, Writable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable, Writable>>();
 
     for (int j = 3; j < vertexValue.length; j++) {
       if (j + 3 > vertexValue.length) {
@@ -160,7 +160,7 @@ public class FullInfoNonSplitReader<S extends Writable, V extends Writable, E ex
       j += 2;
       LongWritable edgeID = new LongWritable(
           edgeCount++ | (((long) peer.getPeerIndex()) << 32));
-      Edge<E, LongWritable, LongWritable> e = new Edge<E, LongWritable, LongWritable>(
+      Edge<E, LongWritable, LongWritable, Writable> e = new Edge<E, LongWritable, LongWritable, Writable>(
           edgeID, sinkID);
       _adjList.add(e);
       if (sinkPartitionID != peer.getPeerIndex()
@@ -178,7 +178,7 @@ public class FullInfoNonSplitReader<S extends Writable, V extends Writable, E ex
 
   private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(
       LongWritable vertexID,
-      List<IEdge<E, LongWritable, LongWritable>> adjList) {
+      List<IEdge<E, LongWritable, LongWritable, Writable>> adjList) {
     return ReflectionUtils.newInstance(GraphJobRunner.VERTEX_CLASS,
         new Class<?>[] { Writable.class, Iterable.class },
         new Object[] { vertexID, adjList });

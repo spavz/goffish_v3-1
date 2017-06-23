@@ -22,11 +22,16 @@ public class DefaultSubgraphVertex<V extends Writable, E extends Writable, I ext
 
   private I id;
   private V value;
-  private LinkedList<IEdge<E, I, J>> outEdges;
+  private LinkedList<IEdge<E, J, I, Writable>> outEdges;
 
   @Override
-  public LinkedList<IEdge<E, I, J>> getOutEdges() {
+  public LinkedList<IEdge<E, J, I, Writable>> getOutEdges() {
     return outEdges;
+  }
+
+  @Override
+  public Iterable<IEdge<E, J, I, Writable>> getInEdges() {
+    return null;
   }
 
   @Override
@@ -54,12 +59,23 @@ public class DefaultSubgraphVertex<V extends Writable, E extends Writable, I ext
     this.value = value;
   }
 
+  //TODO: implement this properly
+  @Override
+  public IEdge<E, J, I, Writable> getOutEdge(I vertexId) {
+    return null;
+  }
+
+  @Override
+  public void addInEdge(IEdge<E, J, I, Writable> e) {
+    return;
+  }
+
   @Override
   public boolean isRemote() {
     return false;
   }
 
-  public void initialize(I vertexId, V value, LinkedList<IEdge<E, I, J>> edges) {
+  public void initialize(I vertexId, V value, LinkedList<IEdge<E, J, I, Writable>> edges) {
     this.id = vertexId;
     this.value = value;
     this.outEdges = edges;
@@ -74,7 +90,7 @@ public class DefaultSubgraphVertex<V extends Writable, E extends Writable, I ext
     int numOutEdges = outEdges.size();
     dataOutput.writeInt(numOutEdges);
 //        System.out.println("Write: " + "Number edges: " + numOutEdges);
-    for (IEdge<E, I, J> edge : outEdges) {
+    for (IEdge<E, J, I, Writable> edge : outEdges) {
 //            System.out.println("Write: " + "Edge:" + edge.getSinkVertexId() + " Class: " + edge.getSinkVertexId().getClass().getSimpleName());
       edge.getSinkVertexId().write(dataOutput);
       edge.getValue().write(dataOutput);

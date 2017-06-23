@@ -25,20 +25,16 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hama.HamaConfiguration;
 import org.apache.hama.bsp.BSPPeer;
-import org.apache.hama.bsp.BSPPeerImpl;
 import org.apache.hama.bsp.sync.SyncException;
 import org.apache.hama.commons.util.KeyValuePair;
 import org.apache.hama.util.ReflectionUtils;
@@ -50,7 +46,6 @@ import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
 import in.dream_lab.goffish.api.IEdge;
-import in.dream_lab.goffish.api.IMessage;
 import in.dream_lab.goffish.api.ISubgraph;
 import in.dream_lab.goffish.api.IVertex;
 import in.dream_lab.goffish.hama.api.IControlMessage;
@@ -92,7 +87,7 @@ public class LongTextJSONReader<S extends Writable, V extends Writable, E extend
     vertexMap = new HashMap<LongWritable, IVertex<V, E, LongWritable, LongWritable>>();
 
     // List of edges.Used to create RemoteVertices
-    List<IEdge<E, LongWritable, LongWritable>> _edges = new ArrayList<IEdge<E, LongWritable, LongWritable>>();
+    List<IEdge<E, LongWritable, LongWritable, Writable>> _edges = new ArrayList<IEdge<E, LongWritable, LongWritable, Writable>>();
 
     KeyValuePair<Writable, Writable> pair;
     while ((pair = peer.readNext()) != null) {
@@ -113,7 +108,7 @@ public class LongTextJSONReader<S extends Writable, V extends Writable, E extend
         IVertex<V, E, LongWritable, LongWritable> vertex = createVertex(
             StringJSONInput);
         vertexMap.put(vertex.getVertexId(), vertex);
-        for (IEdge<E, LongWritable, LongWritable> e : vertex.getOutEdges())
+        for (IEdge<E, LongWritable, LongWritable, Writable> e : vertex.getOutEdges())
           _edges.add(e);
       }
     }
@@ -141,12 +136,12 @@ public class LongTextJSONReader<S extends Writable, V extends Writable, E extend
       String JSONVertex = msg.getControlInfo().toString();
       IVertex<V, E, LongWritable, LongWritable> vertex = createVertex(JSONVertex);
       vertexMap.put(vertex.getVertexId(), vertex);
-      for (IEdge<E, LongWritable, LongWritable> e : vertex.getOutEdges())
+      for (IEdge<E, LongWritable, LongWritable, Writable> e : vertex.getOutEdges())
         _edges.add(e);
     }
     
     /* Create remote vertex objects. */
-    for (IEdge<E, LongWritable, LongWritable> e : _edges) {
+    for (IEdge<E, LongWritable, LongWritable, Writable> e : _edges) {
       LongWritable sinkID = e.getSinkVertexId();
       IVertex<V, E, LongWritable, LongWritable> sink =  vertexMap.get(sinkID);
       if (sink == null) {
@@ -289,7 +284,7 @@ public class LongTextJSONReader<S extends Writable, V extends Writable, E extend
         Long.valueOf(JSONInput.get(0).toString()));
     assert (vertexMap.get(sourceID) == null);
 
-    List<IEdge<E, LongWritable, LongWritable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable>>();
+    List<IEdge<E, LongWritable, LongWritable, Writable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable, Writable>>();
 
     //fix this
     V value = (V) new Text(JSONInput.get(2).toString());
@@ -305,7 +300,7 @@ public class LongTextJSONReader<S extends Writable, V extends Writable, E extend
       //fix this
       E edgeValue = (E) new Text(edgeValues[2].toString());
       
-      Edge<E, LongWritable, LongWritable> edge = new Edge<E, LongWritable, LongWritable>(
+      Edge<E, LongWritable, LongWritable, Writable> edge = new Edge<E, LongWritable, LongWritable, Writable>(
           edgeID, sinkID);
       edge.setValue(edgeValue);
       _adjList.add(edge);
@@ -342,7 +337,7 @@ public class LongTextJSONReader<S extends Writable, V extends Writable, E extend
     // union edge pairs
     for (IVertex<V, E, LongWritable, LongWritable> vertex : vertices) {
       if (!vertex.isRemote()) {
-        for (IEdge<E, LongWritable, LongWritable> edge : vertex.getOutEdges()) {
+        for (IEdge<E, LongWritable, LongWritable, Writable> edge : vertex.getOutEdges()) {
           IVertex<V, E, LongWritable, LongWritable> sink = vertexMap
               .get(edge.getSinkVertexId());
           ds.union(vertex, sink);
@@ -378,7 +373,7 @@ public class LongTextJSONReader<S extends Writable, V extends Writable, E extend
     sendToAllPartitions(subgraphLocationBroadcast);
   }
 
-  private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(LongWritable vertexID, List<IEdge<E, LongWritable, LongWritable>> adjList) {
+  private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(LongWritable vertexID, List<IEdge<E, LongWritable, LongWritable, Writable>> adjList) {
     return ReflectionUtils.newInstance(GraphJobRunner.VERTEX_CLASS, new Class<?>[] {Writable.class, Iterable.class},
             new Object[] {vertexID, adjList});
   }

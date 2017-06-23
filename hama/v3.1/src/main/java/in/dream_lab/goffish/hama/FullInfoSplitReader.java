@@ -21,7 +21,6 @@ package in.dream_lab.goffish.hama;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -181,7 +180,7 @@ public class FullInfoSplitReader<S extends Writable, V extends Writable, E exten
           partitionID, vertexSubgraphID);
       partition.addSubgraph(subgraph);
     }
-    List<IEdge<E, LongWritable, LongWritable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable>>();
+    List<IEdge<E, LongWritable, LongWritable, Writable>> _adjList = new ArrayList<IEdge<E, LongWritable, LongWritable, Writable>>();
 
     for (int j = 3; j < vertexValue.length; j++) {
       if (j + 3 > vertexValue.length) {
@@ -194,7 +193,7 @@ public class FullInfoSplitReader<S extends Writable, V extends Writable, E exten
       j += 2;
       LongWritable edgeID = new LongWritable(
           edgeCount++ | (((long) peer.getPeerIndex()) << 32));
-      Edge<E, LongWritable, LongWritable> e = new Edge<E, LongWritable, LongWritable>(
+      Edge<E, LongWritable, LongWritable, Writable> e = new Edge<E, LongWritable, LongWritable, Writable>(
           edgeID, sinkID);
       _adjList.add(e);
       if (sinkPartitionID != peer.getPeerIndex() && subgraph.getVertexById(sinkID) == null) {
@@ -209,7 +208,7 @@ public class FullInfoSplitReader<S extends Writable, V extends Writable, E exten
     subgraph.addVertex(createVertexInstance(vertexID, _adjList));
   }
 
-  private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(LongWritable vertexID, List<IEdge<E, LongWritable, LongWritable>> adjList) {
+  private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(LongWritable vertexID, List<IEdge<E, LongWritable, LongWritable, Writable>> adjList) {
     return ReflectionUtils.newInstance(GraphJobRunner.VERTEX_CLASS, new Class<?>[] {Writable.class, Iterable.class},
             new Object[] {vertexID, adjList});
   }

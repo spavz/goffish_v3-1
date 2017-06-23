@@ -17,7 +17,7 @@ public class DefaultRemoteSubgraphVertex<V extends Writable, E extends Writable,
 
   private V localState;
 
-  public void initialize(K subgraphId, I vertexId, V value, LinkedList<IEdge<E, I, J>> subgraphEdges) {
+  public void initialize(K subgraphId, I vertexId, V value, LinkedList<IEdge<E, J, I, Writable>> subgraphEdges) {
     this.subgraphId = subgraphId;
     super.initialize(vertexId, value, subgraphEdges);
   }
@@ -32,12 +32,7 @@ public class DefaultRemoteSubgraphVertex<V extends Writable, E extends Writable,
     return subgraphId;
   }
 
-  @Override
-  public V getLocalState() {
-    return localState;
-  }
-
-  @Override
+    @Override
   public void setLocalState(V value) {
     localState = value;
   }

@@ -49,7 +49,6 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Ints;
 
 import in.dream_lab.goffish.api.ISubgraphWrapup;
-import in.dream_lab.goffish.hama.GraphJob;
 import in.dream_lab.goffish.hama.api.IControlMessage;
 import in.dream_lab.goffish.hama.api.IReader;
 /**
@@ -139,7 +138,7 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
         for (IVertex<V, E, I, J> v : subgraph.getLocalVertices()) {
           boolean isBoundary = false;
           long edgeDegree = 0;
-          for (IEdge<E, I, J> e : v.getOutEdges()) {
+          for (IEdge<E, J, I, Writable> e : v.getOutEdges()) {
             edgeDegree++;
             IVertex<V, E, I, J> adjVertex = subgraph.getVertexById(e.getSinkVertexId());
             if (adjVertex.isRemote()) {
