@@ -27,6 +27,7 @@ import in.dream_lab.goffish.api.IEdge;
 import in.dream_lab.goffish.api.IMessage;
 import in.dream_lab.goffish.api.IVertex;
 import in.dream_lab.goffish.api.AbstractSubgraphComputation;
+import org.apache.hadoop.io.Writable;
 
 /*
  * Prints the edge list
@@ -42,7 +43,7 @@ public class EdgeList extends
     if (getSuperstep() == 0) {
       for (IVertex<LongWritable, LongWritable, LongWritable, LongWritable> vertex : getSubgraph()
           .getLocalVertices()) {
-        for (IEdge<LongWritable, LongWritable, LongWritable> e : vertex
+        for (IEdge<LongWritable, LongWritable, LongWritable, Writable> e : vertex
             .getOutEdges()) {
           System.out.println(vertex.getVertexId() + "\t" + e.getSinkVertexId());
         }

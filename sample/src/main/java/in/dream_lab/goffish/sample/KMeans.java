@@ -2,10 +2,7 @@ package in.dream_lab.goffish.sample;
 
 import java.io.DataInput;
 import java.io.DataOutput;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -390,7 +387,7 @@ public class KMeans extends
                             + " in subgraph " + subgraph.getSubgraphId() + " having local vertices " + subgraph.getLocalVertexCount()
                             + " remote vertices " + (subgraph.getVertexCount() - subgraph.getLocalVertexCount()));
 
-                        for (IEdge<LongWritable, LongWritable, LongWritable> edge : source.getOutEdges()) {
+                        for (IEdge<LongWritable, LongWritable, LongWritable, Writable> edge : source.getOutEdges()) {
                                 IVertex<LongWritable, LongWritable, LongWritable, LongWritable> adjVertex =
                                     subgraph.getVertexById(edge.getSinkVertexId());
                                 Pair<Integer, Long> adjDist = distUpdatable.get(adjVertex.getVertexId().get());
@@ -502,7 +499,7 @@ public class KMeans extends
 
                 for (IVertex<LongWritable, LongWritable, LongWritable, LongWritable> vertex : subgraph.getLocalVertices()) {
                         long clusterId = dist.get(vertex.getVertexId().get()).second;
-                        for (IEdge<LongWritable, LongWritable, LongWritable> edge : vertex.getOutEdges()) {
+                        for (IEdge<LongWritable, LongWritable, LongWritable, Writable> edge : vertex.getOutEdges()) {
                                 IVertex<LongWritable, LongWritable, LongWritable, LongWritable> adjVertex =
                                     subgraph.getVertexById(edge.getSinkVertexId());
 

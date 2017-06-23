@@ -32,6 +32,7 @@ import in.dream_lab.goffish.api.IMessage;
 import in.dream_lab.goffish.api.IRemoteVertex;
 import in.dream_lab.goffish.api.IVertex;
 import in.dream_lab.goffish.api.AbstractSubgraphComputation;
+import org.apache.hadoop.io.Writable;
 
 /*
  * ported from goffish v2
@@ -84,7 +85,7 @@ public class PageRank extends
 
         double delta = _weights.get(vertex.getVertexId().get())
             / Iterables.size(vertex.getOutEdges());
-        for (IEdge<LongWritable, LongWritable, LongWritable> edge : vertex
+        for (IEdge<LongWritable, LongWritable, LongWritable, Writable> edge : vertex
             .getOutEdges()) {
           myD = sums.get(edge.getSinkVertexId().get()); // sinkVertexId
           myD.d += delta;

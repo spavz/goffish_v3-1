@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.apache.hadoop:hadoop-client:3.0.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/hadoop/hadoop-client/3.0.0-SNAPSHOT/hadoop-client-3.0.0-20160503.055614-4218.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/hadoop/hadoop-client/3.0.0-SNAPSHOT/hadoop-client-3.0.0-20160503.055614-4218-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/apache/hadoop/hadoop-client/3.0.0-SNAPSHOT/hadoop-client-3.0.0-20160503.055614-4218-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

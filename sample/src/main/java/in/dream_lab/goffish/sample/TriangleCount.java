@@ -35,6 +35,7 @@ import in.dream_lab.goffish.api.IVertex;
 import in.dream_lab.goffish.sample.ByteArrayHelper.Reader;
 import in.dream_lab.goffish.sample.ByteArrayHelper.Writer;
 import in.dream_lab.goffish.api.AbstractSubgraphComputation;
+import org.apache.hadoop.io.Writable;
 
 
 /*
@@ -96,7 +97,7 @@ public class TriangleCount extends
             // the type of triangle
             for (IVertex<LongWritable, LongWritable, LongWritable, LongWritable> firstVertex : getSubgraph()
                     .getLocalVertices()) {
-                for (IEdge<LongWritable, LongWritable, LongWritable> edge : firstVertex.getOutEdges()) {
+                for (IEdge<LongWritable, LongWritable, LongWritable, Writable> edge : firstVertex.getOutEdges()) {
                     IVertex<LongWritable, LongWritable, LongWritable, LongWritable> secondVertex =
                             getSubgraph().getVertexById(edge.getSinkVertexId());
 
@@ -123,7 +124,7 @@ public class TriangleCount extends
                     // adjacent vertex is remote (Type 2)
                     // Counting triangles which have at least two vertices in the same
                     // subgraph.
-                    for (IEdge<LongWritable, LongWritable, LongWritable> secondEdge : secondVertex.getOutEdges()) {
+                    for (IEdge<LongWritable, LongWritable, LongWritable, Writable> secondEdge : secondVertex.getOutEdges()) {
                         IVertex<LongWritable, LongWritable, LongWritable, LongWritable> thirdVertex =
                                 getSubgraph().getVertexById(secondEdge.getSinkVertexId());
                         if (thirdVertex.isRemote() || // TYPE 2: 2 local 1 remote
@@ -162,7 +163,7 @@ public class TriangleCount extends
                 // If adjacent (third) vertex is remote AND has a higher value than this
                 // (second) vertex AND is not in same SG as first,
                 // pass <thirdVID,secondVID,firstVID1,firstVID2,...>
-                for (IEdge<LongWritable, LongWritable, LongWritable> secondEdge : secondVertex.getOutEdges()) {
+                for (IEdge<LongWritable, LongWritable, LongWritable, Writable> secondEdge : secondVertex.getOutEdges()) {
                     IVertex<LongWritable, LongWritable, LongWritable, LongWritable> thirdVertex =
                             getSubgraph().getVertexById(secondEdge.getSinkVertexId());
 

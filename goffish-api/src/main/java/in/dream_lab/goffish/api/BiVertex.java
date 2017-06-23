@@ -31,9 +31,9 @@ public interface BiVertex<V extends Writable, E extends Writable, I extends Writ
 
   boolean isRemote();
 
-  Collection<IEdge<E, I, J>> getOutEdges();
+  Collection<IEdge<E, J, I, Writable>> getOutEdges();
 
-  Collection<IEdge<E, I, J>> getInEdges();// * addition to IVertex
+  Collection<IEdge<E, J, I, Writable>> getInEdges();// * addition to IVertex
 
   V getValue();
 

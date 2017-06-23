@@ -45,11 +45,15 @@ public interface ISubgraph<S extends Writable, V extends Writable, E extends Wri
 
   Iterable<IRemoteVertex<V, E, I, J, K>> getRemoteVertices();
 
-  Iterable<IEdge<E, I, J>> getOutEdges();
+  Iterable<IEdge<E, J, I, Writable>> getOutEdges();
 
-  IEdge<E, I, J> getEdgeById(J edgeID);
+  IEdge<E, J, I, Writable> getEdgeById(J edgeID);
 
   void setSubgraphValue(S value);
 
   S getSubgraphValue();
+
+  Iterable<K> getRemoteSubgraphsID();
+
+  Iterable<IEdge> getRemoteInEdges();
 }

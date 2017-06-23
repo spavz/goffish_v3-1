@@ -16,16 +16,11 @@
 
 package in.dream_lab.goffish.sample;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -36,14 +31,13 @@ import java.util.Set;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
-import com.google.common.collect.Iterables;
-
 import in.dream_lab.goffish.api.IEdge;
 import in.dream_lab.goffish.api.IMessage;
 import in.dream_lab.goffish.api.IRemoteVertex;
 import in.dream_lab.goffish.api.ISubgraphWrapup;
 import in.dream_lab.goffish.api.IVertex;
 import in.dream_lab.goffish.api.AbstractSubgraphComputation;
+import org.apache.hadoop.io.Writable;
 
 /*
  * ported from goffish v2
@@ -457,7 +451,7 @@ public class SingleSourceShortestPath extends
       // BFS traverse to children of current vertex
       // update their shortest distance if necessary
       // add them to update set if distance has changed
-      for (IEdge<LongWritable, LongWritable, LongWritable> e : currentVertex
+      for (IEdge<LongWritable, LongWritable, LongWritable, Writable> e : currentVertex
           .getOutEdges()) {
 
         // get child vertex

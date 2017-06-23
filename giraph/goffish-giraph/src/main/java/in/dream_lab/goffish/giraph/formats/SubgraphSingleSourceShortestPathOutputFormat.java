@@ -2,9 +2,9 @@ package in.dream_lab.goffish.giraph.formats;
 
 import in.dream_lab.goffish.api.ISubgraph;
 import in.dream_lab.goffish.api.IVertex;
-import in.dream_lab.goffish.giraph.graph.SubgraphVertices;
 import in.dream_lab.goffish.giraph.graph.SubgraphId;
-import org.apache.giraph.graph.*;
+import in.dream_lab.goffish.giraph.graph.SubgraphVertices;
+import org.apache.giraph.graph.Vertex;
 import org.apache.giraph.io.formats.TextVertexOutputFormat;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;

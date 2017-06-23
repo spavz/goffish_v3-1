@@ -23,11 +23,13 @@ import org.apache.hadoop.io.Writable;
  * @param <I> Vertex ID object type
  * @param <J> Edge ID object type
  */
-public interface IEdge<E extends Writable, I extends Writable, J extends Writable> {
+public interface IEdge<E extends Writable, J extends Writable, I extends Writable, K extends  Writable> {
 
   J getEdgeId();
 
   I getSinkVertexId();// add getSinkVertex();
+
+  K getSourceVertexId();
 
   E getValue();
 
