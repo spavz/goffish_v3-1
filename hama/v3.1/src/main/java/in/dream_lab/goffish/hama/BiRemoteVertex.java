@@ -1,7 +1,9 @@
 package in.dream_lab.goffish.hama;
 
 import in.dream_lab.goffish.api.IBiEdge;
+import in.dream_lab.goffish.api.IBiRemoteVertex;
 import in.dream_lab.goffish.api.IBiVertex;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
 
 import java.util.ArrayList;
@@ -10,27 +12,30 @@ import java.util.List;
 /**
  * Created by vis on 28/6/17.
  */
-public class BiVertex<V extends Writable, E extends Writable, I extends Writable, J extends Writable, K extends Writable> implements IBiVertex<V, E, I, J, K> {
+public class BiRemoteVertex<V extends Writable, E extends Writable, I extends Writable, J extends Writable, K extends Writable> implements IBiRemoteVertex<V, E, I, J, K> {
 
     private List<IBiEdge<E, I, J, K>> _adjList;
     private List<IBiEdge<E, I, J, K>> _inadjList;
     private I vertexID;
     private V _value;
 
-    BiVertex() {
+    BiRemoteVertex(LongWritable sinkID, LongWritable sinkSubgraphID) {
         _adjList = new ArrayList<IBiEdge<E, I, J, K>>();
-        _inadjList= new ArrayList<>();
     }
 
-    BiVertex(I ID) {
+    BiRemoteVertex(I ID) {
         this();
         vertexID = ID;
     }
 
-    BiVertex(I Id, Iterable<IBiEdge<E, I, J, K>> edges) {
+    BiRemoteVertex(I Id, Iterable<IBiEdge<E, I, J, K>> edges) {
         this(Id);
         for (IBiEdge<E, I, J, K> e : edges)
             _adjList.add(e);
+    }
+
+    public BiRemoteVertex() {
+
     }
 
     void setVertexID(I vertexID) {
@@ -83,6 +88,7 @@ public class BiVertex<V extends Writable, E extends Writable, I extends Writable
         return _inadjList;
     }
 
+
     @Override
     public void addInEdge(IBiEdge<E, I, J, K> e) {
         _inadjList.add(e);
@@ -90,9 +96,23 @@ public class BiVertex<V extends Writable, E extends Writable, I extends Writable
 
     @Override
     public void addInEdges(ArrayList<IBiEdge<E, I, J, K>> edges) {
-        for(IBiEdge<E, I, J, K> e: edges)
+        for(IBiEdge e: edges)
             _inadjList.add(e);
     }
 
 
+    @Override
+    public K getSubgraphId() {
+        return null;
+    }
+
+    @Override
+    public void setLocalState(V value) {
+
+    }
+
+    @Override
+    public V getLocalState() {
+        return null;
+    }
 }

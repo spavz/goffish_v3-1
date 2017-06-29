@@ -19,9 +19,9 @@
 
 package in.dream_lab.goffish.hama;
 
-import java.io.IOException;
-
 import in.dream_lab.goffish.api.*;
+import in.dream_lab.goffish.hama.api.IBiReader;
+import in.dream_lab.goffish.hama.api.IReader;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.LongWritable;
@@ -30,22 +30,14 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hama.Constants;
 import org.apache.hama.HamaConfiguration;
 import org.apache.hama.bsp.BSPJob;
-import org.apache.hama.bsp.Combiner;
 import org.apache.hama.bsp.Partitioner;
-import org.apache.hama.bsp.BSPJob.JobState;
-import org.apache.hama.bsp.PartitioningRunner.RecordConverter;
-import org.apache.hama.bsp.message.MessageManager;
-import org.apache.hama.bsp.message.OutgoingMessageManager;
-import org.apache.hama.bsp.message.queue.MessageQueue;
 
-import com.google.common.base.Preconditions;
+import java.io.IOException;
 
-import in.dream_lab.goffish.hama.api.IReader;
+public class BiGraphJob extends BSPJob {
 
-public class GraphJob extends BSPJob {
-
-  public final static String SUBGRAPH_COMPUTE_CLASS_ATTR = "in.dream_lab.goffish.subgraphcompute.class";
-  public final static String SUBGRAPH_CLASS_ATTR = "in.dream_lab.goffish.subgraph.class";
+  public final static String SUBGRAPH_COMPUTE_CLASS_ATTR = "in.dream_lab.goffish.bisubgraphcompute.class";
+  public final static String SUBGRAPH_CLASS_ATTR = "in.dream_lab.goffish.bisubgraph.class";
   public final static String GRAPH_MESSAGE_CLASS_ATTR = "in.dream_lab.goffish.message.class";
   public final static String VERTEX_ID_CLASS_ATTR = "in.dream_lab.goffish.vertexid.class";
   public final static String VERTEX_VALUE_CLASS_ATTR = "in.dream_lab.goffish.vertexvalue.class";
@@ -58,18 +50,18 @@ public class GraphJob extends BSPJob {
   public final static String INITIAL_VALUE = "in.dream_lab.goffish.initialvalue";
   public final static String THREAD_COUNT = "in.dream_lab.goffish.threadcount";
 
-  public static final Log LOG = LogFactory.getLog(GraphJob.class);
+  public static final Log LOG = LogFactory.getLog(BiGraphJob.class);
 
-  public GraphJob(HamaConfiguration conf,
-                  Class<? extends AbstractSubgraphComputation> exampleClass) throws IOException {
+  public BiGraphJob(HamaConfiguration conf,
+                    Class<? extends IBiAbstractSubgraphComputation> exampleClass) throws IOException {
 
     super(conf);
     conf.setBoolean(Constants.ENABLE_RUNTIME_PARTITIONING, false);
     conf.setBoolean("hama.use.unsafeserialization", true);
-    conf.setClass(SUBGRAPH_CLASS_ATTR, Subgraph.class, ISubgraph.class);
-    conf.setClass(SUBGRAPH_COMPUTE_CLASS_ATTR, exampleClass, AbstractSubgraphComputation.class);
+    conf.setClass(SUBGRAPH_CLASS_ATTR, BiSubgraph.class, IBiSubgraph.class);
+    conf.setClass(SUBGRAPH_COMPUTE_CLASS_ATTR, exampleClass, IBiAbstractSubgraphComputation.class);
 
-    this.setBspClass(GraphJobRunner.class);
+    this.setBspClass(BiGraphJobRunner.class);
     // Helps to determine the user's jar to distribute in the cluster.
     this.setJarByClass(exampleClass);
     // setting default values
@@ -151,7 +143,7 @@ public class GraphJob extends BSPJob {
    */
   public void useRicherSubgraph(boolean use) {
     if (use) {
-      conf.setClass(SUBGRAPH_CLASS_ATTR, RicherSubgraph.class, ISubgraph.class);
+      conf.setClass(SUBGRAPH_CLASS_ATTR, RicherSubgraph.class, IBiSubgraph.class);
     }
   }
 
@@ -171,8 +163,8 @@ public class GraphJob extends BSPJob {
    * Sets the input reader for parsing the input to vertices.
    */
   public void setInputReaderClass(
-      @SuppressWarnings("rawtypes") Class<? extends IReader> cls) {
-    conf.setClass(READER_CLASS_ATTR, cls, IReader.class);
+      @SuppressWarnings("rawtypes") Class<? extends IBiReader> cls) {
+    conf.setClass(READER_CLASS_ATTR, cls, IBiReader.class);
   }
 
   /**

@@ -16,9 +16,9 @@
 
 package in.dream_lab.goffish.api;
 
-import java.util.Collection;
-
 import org.apache.hadoop.io.Writable;
+
+import java.util.ArrayList;
 
 /* Defines Vertex interface. Could be used to define multiple graph representation,
  * e.g: adjacency list, adjacency set.
@@ -42,5 +42,9 @@ public interface IBiVertex<V extends Writable, E extends Writable, I extends Wri
   Iterable<IBiEdge<E, I, J, K>> getOutEdges();
 
   Iterable<IBiEdge<E, I, J, K>> getInEdges();// * addition to IVertex
+
+  void addInEdge(IBiEdge<E, I, J, K> e);
+
+  void addInEdges(ArrayList<IBiEdge<E, I, J, K>> edges);
 
 }

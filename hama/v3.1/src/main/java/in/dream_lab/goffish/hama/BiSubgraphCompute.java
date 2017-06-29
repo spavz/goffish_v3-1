@@ -19,25 +19,21 @@
 
 package in.dream_lab.goffish.hama;
 
-import java.io.IOException;
-import java.util.Collection;
-
 import in.dream_lab.goffish.api.*;
 import org.apache.hadoop.io.Writable;
 
-public class SubgraphCompute<S extends Writable, V extends Writable, E extends Writable, M extends Writable, I extends Writable, J extends Writable, K extends Writable>
-    implements ISubgraphCompute<S, V, E, M, I, J, K> {
+import java.io.IOException;
 
-  private ISubgraph<S, V, E, I, J, K> subgraph;
-  private AbstractSubgraphComputation<S, V, E, M, I, J, K> abstractSubgraphCompute;
+public class BiSubgraphCompute<S extends Writable, V extends Writable, E extends Writable, M extends Writable, I extends Writable, J extends Writable, K extends Writable>
+    implements IBiSubgraphCompute<S, V, E, M, I, J, K> {
+
+  private IBiSubgraph<S, V, E, I, J, K> subgraph;
+  private IBiAbstractSubgraphComputation<S, V, E, M, I, J, K> abstractSubgraphCompute;
   long superStepCount;
   boolean voteToHalt;
-  private GraphJobRunner<S, V, E, M, I, J, K> runner;
+  private BiGraphJobRunner<S, V, E, M, I, J, K> runner;
 
-  public void init(GraphJobRunner<S, V, E, M, I, J, K> runner) {
-    this.runner = runner;
-    this.voteToHalt = false;
-  }
+
 
   @Override
   public long getSuperstep() {
@@ -45,7 +41,7 @@ public class SubgraphCompute<S extends Writable, V extends Writable, E extends W
   }
 
   @Override
-  public ISubgraph<S, V, E, I, J, K> getSubgraph() {
+  public IBiSubgraph<S, V, E, I, J, K> getSubgraph() {
     return subgraph;
   }
 
@@ -65,10 +61,18 @@ public class SubgraphCompute<S extends Writable, V extends Writable, E extends W
   void setActive() {
     this.voteToHalt = false;
   }
-
-  void setSubgraph(ISubgraph<S, V, E, I, J, K> subgraph) {
+  @Override
+  public void setSubgraph(IBiSubgraph<S, V, E, I, J, K> subgraph) {
     this.subgraph = subgraph;
   }
+
+
+  public void init(BiGraphJobRunner<S, V, E, M, I, J, K> svemijkBiGraphJobRunner) {
+    this.runner = svemijkBiGraphJobRunner;
+    this.voteToHalt = false;
+  }
+
+
 
   @Override
   public void sendMessage(K subgraphID, Iterable<M> messages) {
@@ -112,11 +116,16 @@ public class SubgraphCompute<S extends Writable, V extends Writable, E extends W
   }
 
   public void setAbstractSubgraphCompute(
-          AbstractSubgraphComputation<S, V, E, M, I, J, K> comp) {
+          IBiAbstractSubgraphComputation<S, V, E, M, I, J, K> comp) {
     this.abstractSubgraphCompute = comp;
   }
-  
-  public AbstractSubgraphComputation<S, V, E, M, I, J, K> getAbstractSubgraphCompute() {
+
+
+
+
+
+
+  public IBiAbstractSubgraphComputation<S, V, E, M, I, J, K> getAbstractSubgraphCompute() {
     return this.abstractSubgraphCompute;
   }
 

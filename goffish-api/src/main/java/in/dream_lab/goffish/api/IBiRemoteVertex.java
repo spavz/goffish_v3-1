@@ -12,33 +12,24 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- */
+*/
 
 package in.dream_lab.goffish.api;
 
 import org.apache.hadoop.io.Writable;
 
-/* Defines Vertex interface. Could be used to define multiple graph representation,
- * e.g: adjacency list, adjacency set.
+/* Defines remote vertex interface.
  * @param <V> Vertex value object type
  * @param <E> Edge value object type
  * @param <I> Vertex ID type
  * @param <J> Edge ID type
+ * @param <K> Subgraph ID type
  * */
-public interface IVertex<V extends Writable, E extends Writable, I extends Writable, J extends Writable> {
-
-  I getVertexId();
-
-  boolean isRemote();
-
-  Iterable<IEdge<E, I, J>> getOutEdges();
-
-  // K getSubgraphID(); Seperate interface
-  // TODO: Add bivertex.
-
-  V getValue();
-
-  void setValue(V value);
-
-  IEdge<E, I, J> getOutEdge(I vertexId);
+public interface IBiRemoteVertex<V extends Writable, E extends Writable, I extends Writable, J extends Writable, K extends Writable>  extends IBiVertex<V, E, I, J,K> {
+  
+  K getSubgraphId();
+  
+  void setLocalState(V value);
+  
+  V getLocalState();
 }

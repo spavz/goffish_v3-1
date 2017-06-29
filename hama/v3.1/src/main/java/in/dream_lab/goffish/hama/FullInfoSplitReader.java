@@ -53,7 +53,7 @@ import org.apache.hama.util.ReflectionUtils;
  * @param <M>
  *
  * Expected format :
- * pid sgid     vid sinkid1 sgid1 pid1 sinkid2 sgid2 pid2 ...
+ * pid vid sgid sinkid1 sgid1 pid1 sinkid2 sgid2 pid2 ...
  * 
  * VertexId - LongWritable
  * EdgeId - LongWritable

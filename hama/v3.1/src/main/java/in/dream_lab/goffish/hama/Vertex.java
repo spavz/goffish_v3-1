@@ -12,10 +12,10 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *  
+ *
  *  @author Himanshu Sharma
  *  @author Diptanshu Kakwani
-*/
+ */
 
 package in.dream_lab.goffish.hama;
 
@@ -30,7 +30,7 @@ import in.dream_lab.goffish.api.IEdge;
 import in.dream_lab.goffish.api.IVertex;
 
 public class Vertex<V extends Writable, E extends Writable, I extends Writable, J extends Writable>
-    implements IVertex<V, E, I, J> {
+        implements IVertex<V, E, I, J> {
 
   private List<IEdge<E, I, J>> _adjList;
   private I vertexID;

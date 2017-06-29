@@ -12,28 +12,19 @@
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
- *
+ *  
  *  @author Himanshu Sharma
  *  @author Diptanshu Kakwani
- */
+*/
 
 package in.dream_lab.goffish.hama;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.lang.management.ManagementFactory;
-
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Ints;
 import in.dream_lab.goffish.api.*;
+import in.dream_lab.goffish.hama.api.IBiReader;
+import in.dream_lab.goffish.hama.api.IControlMessage;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.io.IntWritable;
@@ -45,13 +36,14 @@ import org.apache.hama.bsp.BSPPeer;
 import org.apache.hama.bsp.sync.SyncException;
 import org.apache.hama.util.ReflectionUtils;
 
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Ints;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
-import in.dream_lab.goffish.api.ISubgraphWrapup;
-import in.dream_lab.goffish.hama.GraphJob;
-import in.dream_lab.goffish.hama.api.IControlMessage;
-import in.dream_lab.goffish.hama.api.IReader;
 /**
  * Fully generic graph job runner.
  *
@@ -64,18 +56,18 @@ import in.dream_lab.goffish.hama.api.IReader;
  * @param <K> Subgraph ID type
  */
 
-public final class GraphJobRunner<S extends Writable, V extends Writable, E extends Writable, M extends Writable, I extends Writable, J extends Writable, K extends Writable>
-        extends BSP<Writable, Writable, Writable, Writable, Message<K, M>> {
+public final class BiGraphJobRunner<S extends Writable, V extends Writable, E extends Writable, M extends Writable, I extends Writable, J extends Writable, K extends Writable>
+    extends BSP<Writable, Writable, Writable, Writable, Message<K, M>> {
 
-
+  
   /* Maintains statistics about graph job. Updated by master. */
   public static enum GraphJobCounter {
     ACTIVE_SUBGRAPHS, VERTEX_COUNT, EDGE_COUNT , ITERATIONS
   }
-
-  public static final Log LOG = LogFactory.getLog(GraphJobRunner.class);
-
-  private Partition<S, V, E, I, J, K> partition;
+  
+  public static final Log LOG = LogFactory.getLog(BiGraphJobRunner.class);
+  
+  private BiPartition<S, V, E, I, J, K> partition;
   private BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer;
   private HamaConfiguration conf;
   private Map<K, Integer> subgraphPartitionMap;
@@ -84,12 +76,11 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
   public static Class<? extends Writable> GRAPH_MESSAGE_CLASS;
   public static Class<? extends IVertex> VERTEX_CLASS;
   public static Class<? extends IBiVertex> BIVERTEX_CLASS;
-
   private static int THREAD_COUNT;
-
+  
   //public static Class<Subgraph<?, ?, ?, ?, ?, ?, ?>> subgraphClass;
   private Map<K, List<IMessage<K, M>>> subgraphMessageMap;
-  private List<SubgraphCompute<S, V, E, M, I, J, K>> subgraphs=new ArrayList<SubgraphCompute<S, V, E, M, I, J, K>>();
+  private List<BiSubgraphCompute<S, V, E, M, I, J, K>> subgraphs=new ArrayList<BiSubgraphCompute<S, V, E, M, I, J, K>>();
   boolean allVotedToHalt = false, messageInFlight = false, globalVoteToHalt = false;
 
   // Stats for logging application level messages
@@ -105,29 +96,29 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
   public final void setup(
-          BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer)
-          throws IOException, SyncException, InterruptedException {
+      BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer)
+      throws IOException, SyncException, InterruptedException {
 
     setupfields(peer);
-
-    Class<? extends IReader> readerClass = conf.getClass(GraphJob.READER_CLASS_ATTR, LongTextAdjacencyListReader.class, IReader.class);
+    
+    Class<? extends IBiReader> readerClass = conf.getClass(BiGraphJob.READER_CLASS_ATTR, BiLongTextAdjacencyListReader.class, IBiReader.class);
     List<Object> params = new ArrayList<Object>();
     params.add(peer);
     params.add(subgraphPartitionMap);
     Class<?> paramClasses[] = { BSPPeer.class, Map.class };
 
-    IReader<Writable, Writable, Writable, Writable, S, V, E, I, J, K> reader = ReflectionUtils
-            .newInstance(readerClass, paramClasses, params.toArray());
+    IBiReader reader = ReflectionUtils
+        .newInstance(readerClass, paramClasses, params.toArray());
 
     long startTime = System.currentTimeMillis();
-    List<ISubgraph<S, V, E, I, J, K>> subgraphs = reader.getSubgraphs();
+    List<IBiSubgraph<S, V, E, I, J, K>> subgraphs = reader.getSubgraphs();
     long endTime = System.currentTimeMillis();
     LOG.info("GOFFISH3.PERF.GRAPH_LOAD_TOTAL," + peer.getPeerIndex() + "," + startTime + "," +
-            endTime + "," + (endTime - startTime));
+             endTime + "," + (endTime - startTime));
     LOG.info("GOFFISH3.WORKER.INFO," + peer.getPeerIndex() + "," + peer.getPeerName() + ","
-            + peer.getTaskId() + "," + peer.getNumPeers() + "," + THREAD_COUNT);
+             + peer.getTaskId() + "," + peer.getNumPeers() + "," + THREAD_COUNT);
 
-    for (ISubgraph<S, V, E, I, J, K> subgraph : subgraphs) {
+    for (IBiSubgraph<S, V, E, I, J, K> subgraph : subgraphs) {
       partition.addSubgraph(subgraph);
 
       // Logging info about subgraph
@@ -138,12 +129,12 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
         long remoteVertexCount = Iterables.size(subgraph.getRemoteVertices());
         Map<K, Long> neighborSgId = new HashMap<K, Long>();
 
-        for (IVertex<V, E, I, J> v : subgraph.getLocalVertices()) {
+        for (IBiVertex<V, E, I, J,K> v : subgraph.getLocalVertices()) {
           boolean isBoundary = false;
           long edgeDegree = 0;
-          for (IEdge<E, I, J> e : v.getOutEdges()) {
+          for (IBiEdge<E, I, J,K> e : v.getOutEdges()) {
             edgeDegree++;
-            IVertex<V, E, I, J> adjVertex = subgraph.getVertexById(e.getSinkVertexId());
+            IBiVertex<V, E, I, J, K> adjVertex = subgraph.getVertexById(e.getSinkVertexId());
             if (adjVertex.isRemote()) {
               isBoundary = true;
               remoteEdgeCount++;
@@ -162,8 +153,8 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
         }
 
         LOG.info("GOFFISH3.TOPO.SG," + sgid + "," + localVertexCount + "," + localEdgeCount + ","
-                + remoteVertexCount + "," + remoteEdgeCount + "," + boundaryVertexCount
-                + "," + maxEdgeDegree + "," + peer.getPeerIndex());
+                 + remoteVertexCount + "," + remoteEdgeCount + "," + boundaryVertexCount
+                 + "," + maxEdgeDegree + "," + peer.getPeerIndex());
 
         String adjSgidString = new String(), prefix = "";
         for (Map.Entry<K, Long> e : neighborSgId.entrySet()) {
@@ -176,61 +167,61 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
           LOG.info("GOFFISH3.META.SG," + sgid + "," + localVertexCount + "," + adjSgidString);
 
         LOG.info("GOFFISH3.PERF.PART.PID," + peer.getPeerIndex() + "," +
-                ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
+                 ManagementFactory.getRuntimeMXBean().getName().split("@")[0]);
       }
     }
 
 
   }
-
+  
   /*Initialize the  fields*/
   @SuppressWarnings({ "unchecked", "rawtypes" })
   private void setupfields(
-          BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer) {
-
+      BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer) {
+    
     this.peer = peer;
-    partition = new Partition<S, V, E, I, J, K>(peer.getPeerIndex());
+    partition = new BiPartition<S, V, E, I, J, K>(peer.getPeerIndex());
     this.conf = peer.getConfiguration();
     this.subgraphPartitionMap = new HashMap<K, Integer>();
     this.subgraphMessageMap = new HashMap<K, List<IMessage<K, M>>>();
     this.THREAD_COUNT = conf.getInt(GraphJob.THREAD_COUNT,
-            Runtime.getRuntime().availableProcessors());
+        Runtime.getRuntime().availableProcessors());
     // TODO : Add support for Richer Subgraph
 
     GRAPH_MESSAGE_CLASS = (Class<M>) conf.getClass(
-            GraphJob.GRAPH_MESSAGE_CLASS_ATTR, IntWritable.class, Writable.class);
+        BiGraphJob.GRAPH_MESSAGE_CLASS_ATTR, IntWritable.class, Writable.class);
 
 
     VERTEX_CLASS = (Class<? extends IVertex>) conf.getClass(
-            GraphJob.VERTEX_CLASS_ATTR, Vertex.class, IVertex.class);
+            BiGraphJob.VERTEX_CLASS_ATTR, Vertex.class, IVertex.class);
 
     BIVERTEX_CLASS = (Class<? extends IBiVertex>) conf.getClass(
-            GraphJob.VERTEX_CLASS_ATTR, BiVertex.class, IBiVertex.class);
+            BiGraphJob.VERTEX_CLASS_ATTR, BiVertex.class, IBiVertex.class);
 
     SUBGRAPH_ID_CLASS = (Class<? extends Writable>) conf.getClass(
-            GraphJob.SUBGRAPH_ID_CLASS_ATTR, LongWritable.class, Writable.class);
+            BiGraphJob.SUBGRAPH_ID_CLASS_ATTR, LongWritable.class, Writable.class);
   }
 
-
+   
   @Override
   public final void bsp(
-          BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer)
-          throws IOException, SyncException, InterruptedException {
-
+      BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer)
+      throws IOException, SyncException, InterruptedException {
+    
     //if the application needs any input in the 0th superstep
     String initialValue = conf.get(GraphJob.INITIAL_VALUE);
     /*
      * Creating SubgraphCompute objects
      */
-    for (ISubgraph<S, V, E, I, J, K> subgraph : partition.getSubgraphs()) {
-
-      Class<? extends AbstractSubgraphComputation<S, V, E, M, I, J, K>> subgraphComputeClass;
-      subgraphComputeClass = (Class<? extends AbstractSubgraphComputation<S, V, E, M, I, J, K>>) conf
-              .getClass(GraphJob.SUBGRAPH_COMPUTE_CLASS_ATTR, null);
+    for (IBiSubgraph<S, V, E, I, J, K> subgraph : partition.getSubgraphs()) {
+      
+      Class<? extends IBiAbstractSubgraphComputation<S, V, E, M, I, J, K>> subgraphComputeClass;
+      subgraphComputeClass = (Class<? extends IBiAbstractSubgraphComputation<S, V, E, M, I, J, K>>) conf
+              .getClass(BiGraphJob.SUBGRAPH_COMPUTE_CLASS_ATTR, null);
       if (subgraphComputeClass == null)
         throw new RuntimeException("Could not load subgraph compute class");
 
-      AbstractSubgraphComputation<S, V, E, M, I, J, K> abstractSubgraphComputeRunner;
+      IBiAbstractSubgraphComputation<S, V, E, M, I, J, K> abstractSubgraphComputeRunner;
 
       if (initialValue != null) {
         Object []params = {initialValue};
@@ -241,27 +232,27 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
 
       // FIXME: Subgraph value is not available to user in the subgraph-compute's constructor,
       // since it is added only after the object is created (using setSubgraph).
-      SubgraphCompute<S, V, E, M, I, J, K> subgraphComputeRunner = new SubgraphCompute<S, V, E, M, I, J, K>();
+      BiSubgraphCompute<S, V, E, M, I, J, K> subgraphComputeRunner = new BiSubgraphCompute<S, V, E, M, I, J, K>();
       subgraphComputeRunner.setAbstractSubgraphCompute(abstractSubgraphComputeRunner);
-      abstractSubgraphComputeRunner.setSubgraphPlatformCompute(subgraphComputeRunner);
-      subgraphComputeRunner.setSubgraph(subgraph);
+      abstractSubgraphComputeRunner.setSubgraphPlatformCompute((IBiSubgraphCompute<S, V, E, M, I, J, K>) subgraphComputeRunner);
+      subgraphComputeRunner.setSubgraph((IBiSubgraph<S, V, E, I, J, K>) subgraph);
       subgraphComputeRunner.init(this);
       subgraphs.add(subgraphComputeRunner);
     }
-
+    
     //Completed all initialization steps at this point
     peer.sync();
-
+    
     while (!globalVoteToHalt) {
 
       LOG.info("Application SuperStep " + getSuperStepCount());
       LOG.info("GOFFISH3.PERF.PART.SS_START_MEM," + peer.getPeerIndex() + "," + getSuperStepCount() + ","
-              + ((runtime.totalMemory() - runtime.freeMemory()) / mb) + ","
-              + (runtime.freeMemory() / mb) + "," +  (runtime.totalMemory() / mb) + ","
-              + (runtime.maxMemory() / mb));
-
+               + ((runtime.totalMemory() - runtime.freeMemory()) / mb) + ","
+               + (runtime.freeMemory() / mb) + "," +  (runtime.totalMemory() / mb) + ","
+               + (runtime.maxMemory() / mb));
+      
       subgraphMessageMap = new HashMap<K, List<IMessage<K, M>>>();
-      globalVoteToHalt = (isMasterTask(peer) && getSuperStepCount() != 0) ? true : false;
+      globalVoteToHalt = isMasterTask(peer) && getSuperStepCount() != 0;
       allVotedToHalt = true;
       messageInFlight = false;
       if (LOG.isInfoEnabled()) {
@@ -276,20 +267,20 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
       if (globalVoteToHalt && isMasterTask(peer)) {
         notifyJobEnd();
         peer.sync(); // Wait for all the peers to receive the message in next
-        // superstep.
+                     // superstep.
         break;
       } else if (globalVoteToHalt) {
         break;
       }
-
+      
       ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-              .newFixedThreadPool(THREAD_COUNT);
+          .newFixedThreadPool(THREAD_COUNT);
       //executor.setMaximumPoolSize(Runtime.getRuntime().availableProcessors()*2);
       //executor.setRejectedExecutionHandler(retryHandler);
-
+      
       long subgraphsExecutedThisSuperstep = 0;
 
-      for (SubgraphCompute<S, V, E, M, I, J, K> subgraph : subgraphs) {
+      for (BiSubgraphCompute<S, V, E, M, I, J, K> subgraph : subgraphs) {
         boolean hasMessages = false;
         List<IMessage<K, M>> messagesToSubgraph = subgraphMessageMap.get(subgraph.getSubgraph().getSubgraphId());
         if (messagesToSubgraph != null) {
@@ -326,13 +317,13 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
 
       while (!executor.awaitTermination(5, TimeUnit.SECONDS))
         LOG.info(
-                "Waiting. Submitted tasks: " + subgraphsExecutedThisSuperstep
-                        + ". Completed threads: " + executor.getCompletedTaskCount());
+            "Waiting. Submitted tasks: " + subgraphsExecutedThisSuperstep
+                + ". Completed threads: " + executor.getCompletedTaskCount());
 
       if (executor.getCompletedTaskCount() != subgraphsExecutedThisSuperstep)
         LOG.error("ERROR: expected " + subgraphsExecutedThisSuperstep
-                + " but found only completed threads "
-                + executor.getCompletedTaskCount());
+            + " but found only completed threads "
+            + executor.getCompletedTaskCount());
 
       // executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
 
@@ -360,28 +351,28 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
 
   @Override
   public final void cleanup(
-          BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer)
-          throws IOException {
+      BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer)
+      throws IOException {
 
-    for (SubgraphCompute<S, V, E, M, I, J, K> subgraph : subgraphs) {
-      AbstractSubgraphComputation<S, V, E, M, I, J, K> abstractSubgraphCompute = subgraph
-              .getAbstractSubgraphCompute();
+    for (BiSubgraphCompute<S, V, E, M, I, J, K> subgraph : subgraphs) {
+      IBiAbstractSubgraphComputation<S, V, E, M, I, J, K> abstractSubgraphCompute = subgraph
+          .getAbstractSubgraphCompute();
       if (abstractSubgraphCompute instanceof ISubgraphWrapup) {
         ((ISubgraphWrapup) abstractSubgraphCompute).wrapup();
       }
       else if (subgraph.getSubgraph().getSubgraphValue() != null)
         System.out.println("Subgraph " + subgraph.getSubgraph().getSubgraphId()
-                + " value: " + subgraph.getSubgraph().getSubgraphValue());
+            + " value: " + subgraph.getSubgraph().getSubgraphValue());
     }
   }
-
-
+  
+  
   class ComputeRunnable implements Runnable {
-    SubgraphCompute<S, V, E, M, I, J, K> subgraphComputeRunner;
+    BiSubgraphCompute<S, V, E, M, I, J, K> subgraphComputeRunner;
     Iterable<IMessage<K, M>> msgs;
 
     @SuppressWarnings("unchecked")
-    public ComputeRunnable(SubgraphCompute<S, V, E, M, I, J, K> runner, List<IMessage<K, M>> messages) throws IOException {
+    public ComputeRunnable(BiSubgraphCompute<S, V, E, M, I, J, K> runner, List<IMessage<K, M>> messages) throws IOException {
       this.subgraphComputeRunner = runner;
       this.msgs = messages;
     }
@@ -447,7 +438,7 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
     while ((message = peer.getCurrentMessage()) != null) {
       // Broadcast message, therefore every subgraph receives it
       if (((Message<K, M>) message).getControlInfo().getTransmissionType() == IControlMessage.TransmissionType.BROADCAST) {
-        for (ISubgraph<S, V, E, I, J, K> subgraph : partition.getSubgraphs()) {
+        for (IBiSubgraph<S, V, E, I, J, K> subgraph : partition.getSubgraphs()) {
           List<IMessage<K, M>> subgraphMessage = subgraphMessageMap.get(subgraph.getSubgraphId());
           Long broadMsg = broadcastMsgRecv.get(subgraph.getSubgraphId());
           if (subgraphMessage == null) {
@@ -495,17 +486,17 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
   /* Sets global vote to halt to false if any of the peer is still active. */
   void parseHeartBeat(IMessage<K, M> message) {
     ControlMessage content = (ControlMessage) ((Message<K, M>) message)
-            .getControlInfo();
+        .getControlInfo();
     byte[] heartBeatRaw = content.getExtraInfo().iterator().next().getBytes();
     int heartBeat = Ints.fromByteArray(heartBeatRaw);
     if (heartBeat != 2) // Heartbeat msg = 0x10 when some subgraphs are still
-      // active
+                        // active
       globalVoteToHalt = false;
   }
 
   /* Returns true if the peer is the master task, else false. */
   boolean isMasterTask(
-          BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer) {
+      BSPPeer<Writable, Writable, Writable, Writable, Message<K, M>> peer) {
     return (getMasterTaskIndex() == peer.getPeerIndex()) ? true : false;
   }
 
@@ -523,7 +514,7 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
     try {
       peer.send(peerName, message);
       if (message.getControlInfo()
-              .getTransmissionType() != IControlMessage.TransmissionType.HEARTBEAT) {
+          .getTransmissionType() != IControlMessage.TransmissionType.HEARTBEAT) {
         messageInFlight = true;
       }
     } catch (IOException e) {
@@ -561,10 +552,10 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
     // TODO
   }
 
-  void sendToNeighbors(ISubgraph<S, V, E, I, J, K> subgraph, M message) {
+  void sendToNeighbors(IBiSubgraph<S, V, E, I, J, K> subgraph, M message) {
     Set<K> sent = new HashSet<K>();
-    for (IRemoteVertex<V, E, I, J, K> remotevertices : subgraph
-            .getRemoteVertices()) {
+    for (IBiRemoteVertex<V, E, I, J, K> remotevertices : subgraph
+        .getRemoteVertices()) {
       K neighbourID = remotevertices.getSubgraphId();
       if (!sent.contains(neighbourID)) {
         sent.add(neighbourID);
@@ -584,7 +575,7 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
     }
 
     Message<K, M> msg = new Message<K, M>(Message.MessageType.CUSTOM_MESSAGE,
-            message);
+        message);
     ControlMessage controlInfo = new ControlMessage();
     controlInfo.setTransmissionType(IControlMessage.TransmissionType.BROADCAST);
     msg.setControlInfo(controlInfo);
@@ -608,7 +599,7 @@ public final class GraphJobRunner<S extends Writable, V extends Writable, E exte
     Message<K, M> msg = new Message<K, M>();
     ControlMessage controlInfo = new ControlMessage();
     controlInfo
-            .setTransmissionType(IControlMessage.TransmissionType.GLOBAL_HALT);
+        .setTransmissionType(IControlMessage.TransmissionType.GLOBAL_HALT);
     msg.setControlInfo(controlInfo);
     sendToAll(msg);
   }

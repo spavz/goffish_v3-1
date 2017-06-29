@@ -6,8 +6,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * Created by vis on 28/6/17.
  */
-public class BiEdge<E extends Writable, I extends Writable, J extends Writable, K extends Writable> implements IBiEdge<E, I, J,K> {
-
+public class BiEdge<E extends Writable, I extends Writable, J extends Writable, K extends Writable> implements IBiEdge<E, I, J, K> {
 
     private K _source;
     E _value;
