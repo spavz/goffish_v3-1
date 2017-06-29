@@ -32,4 +32,7 @@ public interface IEdge<E extends Writable, I extends Writable, J extends Writabl
   E getValue();
 
   void setValue(E value);
+
+  Writable getSourceVertexId();
+
 }

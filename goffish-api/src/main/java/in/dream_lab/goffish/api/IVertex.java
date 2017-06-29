@@ -41,4 +41,10 @@ public interface IVertex<V extends Writable, E extends Writable, I extends Writa
   void setValue(V value);
 
   IEdge<E, I, J> getOutEdge(I vertexId);
+
+  Iterable<IEdge<E, I, J>> getInEdges();// * addition to IVertex
+
+  void addInEdge(IEdge<E, I, J> e);
+
+  void addInEdges(Iterable<IEdge<E, I, J>> edges);
 }

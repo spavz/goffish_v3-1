@@ -79,6 +79,21 @@ public class RemoteVertex<V extends Writable, E extends Writable, I extends Writ
   }
 
   @Override
+  public Iterable<IEdge<E, I, J>> getInEdges() {
+    throw new NotImplementedException("Remote Vertex does not have inedges");
+  }
+
+  @Override
+  public void addInEdge(IEdge<E, I, J> e) {
+    throw new NotImplementedException("Remote Vertex does not have inedges");
+  }
+
+  @Override
+  public void addInEdges(Iterable<IEdge<E, I, J>> iEdges) {
+    throw new NotImplementedException("Remote Vertex does not have inedges");
+  }
+
+  @Override
   public K getSubgraphId() {
     return subgraphID;
   }

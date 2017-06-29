@@ -33,6 +33,7 @@ public class Vertex<V extends Writable, E extends Writable, I extends Writable, 
     implements IVertex<V, E, I, J> {
 
   private List<IEdge<E, I, J>> _adjList;
+  private List<IEdge<E, I, J>> _inadjList;
   private I vertexID;
   private V _value;
 
@@ -86,6 +87,22 @@ public class Vertex<V extends Writable, E extends Writable, I extends Writable, 
       if (e.getSinkVertexId().equals(vertexID))
         return e;
     return null;
+  }
+
+  @Override
+  public Iterable<IEdge<E, I, J>> getInEdges() {
+    return _inadjList;
+  }
+
+  @Override
+  public void addInEdge(IEdge<E, I, J> e) {
+    _inadjList.add(e);
+  }
+
+  @Override
+  public void addInEdges(Iterable<IEdge<E, I, J>> iEdges) {
+    for(IEdge e: iEdges)
+      _inadjList.add(e);
   }
 
   @SuppressWarnings("rawtypes")

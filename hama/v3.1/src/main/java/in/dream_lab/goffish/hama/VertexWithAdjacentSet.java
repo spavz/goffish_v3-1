@@ -25,7 +25,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.*;
 
-public class VertexWithAdjacentSet<V extends Writable, E extends Writable, I extends Writable, J extends Writable>
+public abstract class VertexWithAdjacentSet<V extends Writable, E extends Writable, I extends Writable, J extends Writable>
     implements IVertex<V, E, I, J> {
 
   private Map<I, IEdge<E, I, J>> _adjSet;
