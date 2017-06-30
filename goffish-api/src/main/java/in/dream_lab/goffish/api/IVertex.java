@@ -18,6 +18,8 @@ package in.dream_lab.goffish.api;
 
 import org.apache.hadoop.io.Writable;
 
+import java.util.ArrayList;
+
 /* Defines Vertex interface. Could be used to define multiple graph representation,
  * e.g: adjacency list, adjacency set.
  * @param <V> Vertex value object type
@@ -46,5 +48,5 @@ public interface IVertex<V extends Writable, E extends Writable, I extends Writa
 
   void addInEdge(IEdge<E, I, J> e);
 
-  void addInEdges(Iterable<IEdge<E, I, J>> edges);
+  void addInEdges(ArrayList<IEdge<E, I, J>> edges);
 }

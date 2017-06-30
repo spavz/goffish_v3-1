@@ -19,6 +19,7 @@
 
 package in.dream_lab.goffish.hama;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -89,7 +90,7 @@ public class RemoteVertex<V extends Writable, E extends Writable, I extends Writ
   }
 
   @Override
-  public void addInEdges(Iterable<IEdge<E, I, J>> iEdges) {
+  public void addInEdges(ArrayList<IEdge<E, I, J>> iEdges) {
     throw new NotImplementedException("Remote Vertex does not have inedges");
   }
 
