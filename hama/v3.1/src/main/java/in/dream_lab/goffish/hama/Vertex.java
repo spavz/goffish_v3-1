@@ -101,7 +101,7 @@ public class Vertex<V extends Writable, E extends Writable, I extends Writable, 
 
   @Override
   public void addInEdges(ArrayList<IEdge<E, I, J>> iEdges) {
-    for(IEdge e: iEdges)
+    for(IEdge<E, I, J> e: iEdges)
       _inadjList.add(e);
   }
 

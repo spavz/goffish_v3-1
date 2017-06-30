@@ -129,12 +129,18 @@ public class FullInfoSplitReaderAlpha<S extends Writable, V extends Writable, E 
     }
 
       //populate local vertices with their local inEdges
-    for (LongWritable v : localinEdgeMap.keySet())
-        partition.getSubgraph(vertexSubgraphMap.get(v)).getVertexById(v).addInEdges(localinEdgeMap.get(v));
+    for (LongWritable v : localinEdgeMap.keySet()) {
+      IVertex<V,E,LongWritable,LongWritable> vertex = partition.getSubgraph(vertexSubgraphMap.get(v)).getVertexById(v);
+      for(IEdge<E,LongWritable,LongWritable> e: localinEdgeMap.get(v))
+        vertex.addInEdge(e);
+      //vertex.addInEdges(localinEdgeMap.get(v));
+    }
+
+    localinEdgeMap.clear();
 
     //send inedges to all remote vertices
-    int ik = 0;
-    do {
+
+    for (int ik = 0; ik <= messageList.size()-5; ik+=5) {
       Message<K, M> inEdgesMessage = new Message<>();
       inEdgesMessage.setMessageType(Message.MessageType.CUSTOM_MESSAGE);
       ControlMessage controlInfo = new ControlMessage();
@@ -147,7 +153,7 @@ public class FullInfoSplitReaderAlpha<S extends Writable, V extends Writable, E 
       }
       peer.send(peer.getPeerName(messageList.get(ik).intValue()), inEdgesMessage);
       ik += 5;
-    }while (ik < messageList.size() - 5);
+    }
 
     peer.sync();
 
@@ -162,9 +168,11 @@ public class FullInfoSplitReaderAlpha<S extends Writable, V extends Writable, E 
       LongWritable edgeID = new LongWritable(Longs.fromByteArray(i.next().copyBytes()));
       LongWritable sourceID = new LongWritable(Longs.fromByteArray(i.next().copyBytes()));
 
+      //populate local vertices with their REMOTE inEdges
       partition.getSubgraph(subgraphID).getVertexById(sinkID).addInEdge(new Edge<E, LongWritable, LongWritable>(sourceID,edgeID,sinkID));
 
     }
+    messageList.clear();
 
     // broadcast all subgraphs belonging to this partition
     Message<K, M> subgraphMapppingMessage = new Message<>();
@@ -239,8 +247,8 @@ public class FullInfoSplitReaderAlpha<S extends Writable, V extends Writable, E 
 
       Edge<E, LongWritable, LongWritable> e = new Edge<E, LongWritable, LongWritable>(vertexID,edgeID, sinkID);
       _adjList.add(e);
-      if (sinkPartitionID != peer.getPeerIndex() && subgraph.getVertexById(sinkID) == null) {
-        // this is a remote vertex
+      if (sinkPartitionID != peer.getPeerIndex()) {
+        // this is a remote vertex      && subgraph.getVertexById(sinkID) == null
         IRemoteVertex<V, E, LongWritable, LongWritable, LongWritable> sink = new RemoteVertex<>(
                 sinkID, sinkSubgraphID);
         // Add it to the same subgraph, as this is part of weakly connected
@@ -266,6 +274,8 @@ public class FullInfoSplitReaderAlpha<S extends Writable, V extends Writable, E 
       j += 2;
     }
     subgraph.addVertex(createVertexInstance(vertexID, _adjList));
+    vertexSubgraphMap.put(vertexID,vertexSubgraphID);
+
   }
 
   private IVertex<V, E, LongWritable, LongWritable> createVertexInstance(LongWritable vertexID, List<IEdge<E, LongWritable, LongWritable>> adjList) {
